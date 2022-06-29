@@ -33,11 +33,11 @@ vpt_messages = vpt_inbox.Items
 #                                VPT MODULES                                  #
 # --------------------------------------------------------------------------- #
 
-def get_unread_messages():
+def vpt_get_unread_messages():
 
-def get_bookings():
+def vpt_get_bookings():
 
-def get_quotes():
+def vpt_get_quotes():
 
 # --------------------------------------------------------------------------- #
 #                              JANERBUS MODULES                               #
