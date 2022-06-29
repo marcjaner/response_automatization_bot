@@ -46,7 +46,9 @@ class VPT_quote:
 	name:str
 	pax: int
 	destination: str
-	price: str
+	subtotal: int
+	total:int
+
 
 vpt_bookings : TypeAlias = list[VPT_booking]
 vpt_quotes : TypeAlias = list[VPT_quote]
@@ -103,11 +105,15 @@ def vpt_summarize_quotes():
 
 def vpt_send_booking_confirmation_eng(booking_id : int):
 	booking : VPT_booking = vpt_bookings[booking_id]
-	template = tmplt.vpt_eng_booking_confirmation()
-
-	message = template.format(booking_number=booking.booking_number, name = booking.name, fullname=booking.fullname, email = booking.email, phone=booking.phone, pax=booking.pax, pick_up_arrival=booking.pick_up_arrival, destination_arrival=booking.destination_arrival, arrival_date=booking.arrival_date, arrival_time=booking.arrival_time, flight_n_arrival=booking.flight_n_arrival, pick_up_departure=booking.pick_up_departure, destination_departure=booking.destination_departure, departure_date=booking.destination_date, pick_up_time=booking.pick_up_time, fligh_n_departure=booking.fligh_n_departure, origin=booking.origin, city=bookin.city, total=booking.total, subtotal_first=booking.subtotal_first, subtotal_second=booking.subtotal_second, subtotal_third=booking.subtotal_third)
+	message = tmplt.vpt_eng_booking_confirmation(booking)
 
 	send_mail(booking.email, "contact@vptmallorca.com", "Transfer confirmation VPT" + booking.booking_number, message)
+
+def vpt_send_quote_eng(quote_id : int):
+	quote = VPT_quote = vpt_quotes[quote_id]
+	message = tmplt.vpt_eng_quote(quote)
+
+	send_mail(quote.email, "contact@vptamllorca.com", "VPTMallorca Quote", message)
 
 
 
