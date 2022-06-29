@@ -13,6 +13,8 @@ mapi = outlook.GetNamespace("MAPI")
 # --------------------------------------------------------------------------- #
 vpt = mapi.Folders("contact@vptmallorca.com")
 vpt_inbox = vpt.Folders(1)
+vpt_unread_bookings = list
+vpt_unread_quotes = list
 
 # --------------------------------------------------------------------------- #
 #                             JANERBUS VARIABLES                              #
@@ -34,16 +36,22 @@ vpt_inbox = vpt.Folders(1)
 # --------------------------------------------------------------------------- #
 
 def vpt_get_unread_messages():
-
 	vpt_messages = vpt_inbox.Items
+
+	global vpt_unread_bookings
+	vpt_unread_bookings = []
+	global vpt_unread_quotes
+	vpt_unread_quotes = []
+
 	# global vpt_unread
 	for msg in list(vpt_messages):
 		if msg.UnRead == True:
-			print(msg.Subject + ' ' + str(msg.ReceivedTime))
+			if msg.Subject.startswith('Transfer de'):
+				vpt_unread_bookings.append(msg)
+			elif msg.Subject.startswith('Presupuesto de'):
+				vpt_unread_quotes.append(msg)
 
-# def vpt_get_bookings():
-#
-# def vpt_get_quotes():
+
 #
 # def vpt_summarize_bookings():
 #
@@ -51,6 +59,10 @@ def vpt_get_unread_messages():
 
 def main():
 	vpt_get_unread_messages()
+	vpt_summarize_bookings(vpt_unread_bookings)
+	vpt_summarize_quotes(vpt_unread_quotes)
+
+
 main()
 
 # --------------------------------------------------------------------------- #
