@@ -1,5 +1,6 @@
 from typing_extensions import TypeAlias
 from dataclasses import dataclass
+import templates as tmplt
 import win32com.client
 
 # --------------------------------------------------------------------------- #
@@ -47,6 +48,9 @@ class VPT_quote:
 	destination: str
 	price: str
 
+vpt_bookings : TypeAlias = list[VPT_booking]
+vpt_quotes : TypeAlias = list[VPT_quote]
+
 
 
 # --------------------------------------------------------------------------- #
@@ -61,14 +65,21 @@ class VPT_quote:
 #                               GLOBAL MODULES                                #
 # --------------------------------------------------------------------------- #
 
-# def reply():
+def send_mail(to : str, from : str, subject : str, body : str):
+	mail = outlook.CreateItem(0)
+	mail.Subject = subject
+	mail.To = to
+	mail.From = from
+	mail.HTMLbody = body
+	mail.send()
+
 
 
 # --------------------------------------------------------------------------- #
 #                                VPT MODULES                                  #
 # --------------------------------------------------------------------------- #
 
-def vpt_get_unread_messages():
+def vpt_get_unread_messages() -> list:
 	vpt_messages = vpt_inbox.Items
 
 	global vpt_unread_bookings
@@ -89,6 +100,17 @@ def vpt_get_unread_messages():
 def vpt_summarize_bookings():
 
 def vpt_summarize_quotes():
+
+def vpt_send_booking_confirmation_eng(booking_id : int):
+	booking : VPT_booking = vpt_bookings[booking_id]
+	template = tmplt.vpt_eng_booking_confirmation()
+
+	message = template.format(booking_number=booking.booking_number, name = booking.name, fullname=booking.fullname, email = booking.email, phone=booking.phone, pax=booking.pax, pick_up_arrival=booking.pick_up_arrival, destination_arrival=booking.destination_arrival, arrival_date=booking.arrival_date, arrival_time=booking.arrival_time, flight_n_arrival=booking.flight_n_arrival, pick_up_departure=booking.pick_up_departure, destination_departure=booking.destination_departure, departure_date=booking.destination_date, pick_up_time=booking.pick_up_time, fligh_n_departure=booking.fligh_n_departure, origin=booking.origin, city=bookin.city, total=booking.total, subtotal_first=booking.subtotal_first, subtotal_second=booking.subtotal_second, subtotal_third=booking.subtotal_third)
+
+	send_mail(booking.email, "contact@vptmallorca.com", "Transfer confirmation VPT" + booking.booking_number, message)
+
+
+
 
 def main():
 	vpt_get_unread_messages()
