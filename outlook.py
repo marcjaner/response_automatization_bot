@@ -14,8 +14,12 @@ mapi = outlook.GetNamespace("MAPI")
 # --------------------------------------------------------------------------- #
 vpt = mapi.Folders("contact@vptmallorca.com")
 vpt_inbox = vpt.Folders(1)
+#------------------------------------ENG--------------------------------------#
 vpt_unread_bookings_eng = list
 vpt_unread_quotes_eng = list
+#-------------------------------------DE--------------------------------------#
+vpt_unread_bookings_de = list
+vpt_unread_quotes_de = list
 
 @dataclass
 class VPT_booking:
@@ -41,13 +45,16 @@ class VPT_booking:
 	subtotal_first: int
 	subtotal_second: int
 	subtotal_third: int
+	language : str
+
 
 class VPT_quote:
 	name:str
 	pax: int
 	destination: str
 	subtotal: int
-	total:int
+	total: int
+	language : str
 
 
 vpt_bookings : TypeAlias = list[VPT_booking]
@@ -83,19 +90,32 @@ def send_mail(to : str, from : str, subject : str, body : str):
 
 def vpt_get_unread_messages() -> list:
 	vpt_messages = vpt_inbox.Items
-
+#------------------------------------ENG--------------------------------------#
 	global vpt_unread_bookings_eng
 	vpt_unread_bookings_eng = []
 	global vpt_unread_quotes_eng
 	vpt_unread_quotes_eng = []
 
+#-------------------------------------DE--------------------------------------#
+	global vpt_unread_bookings_de
+	vpt_unread_bookings_de = []
+	global vpt_unread_quotes_de
+	vpt_unread_quotes_de = []
+
 	# global vpt_unread
 	for msg in list(vpt_messages):
 		if msg.UnRead == True:
+#------------------------------------ENG--------------------------------------#
 			if msg.Subject.startswith('Transfer de') or msg.Subject.startswith('Re: VPTMallorca Quote'):
 				vpt_unread_bookings_eng.append(msg)
 			elif msg.Subject.startswith('Presupuesto de'):
 				vpt_unread_quotes_eng.append(msg)
+#-------------------------------------DE--------------------------------------#
+			elif msg.Subject.startswith('Reserva de'):
+				vpt_unread_bookings_de.append(msg)
+			elif msg.Subject.startswith('Transferpreise vom'):
+				vpt_unread_quotes_de.append(msg)
+
 
 
 
@@ -103,17 +123,34 @@ def vpt_summarize_bookings() -> list[VPT_booking]:
 
 def vpt_summarize_quotes() -> list[VPT_quote]:
 
+#------------------------------------ENG--------------------------------------#
+
 def vpt_send_booking_confirmation_eng(booking_id : int):
 	booking : VPT_booking = vpt_bookings[booking_id]
+	assert booking.language == "ENG"
 	message = tmplt.vpt_eng_booking_confirmation(booking)
 
 	send_mail(booking.email, "contact@vptmallorca.com", "Transfer confirmation VPT" + booking.booking_number, message)
 
 def vpt_send_quote_eng(quote_id : int):
 	quote = VPT_quote = vpt_quotes[quote_id]
+	assert quote.language == "ENG"
 	message = tmplt.vpt_eng_quote(quote)
 
 	send_mail(quote.email, "contact@vptamllorca.com", "VPTMallorca Quote", message)
+
+#-------------------------------------DE--------------------------------------#
+def vpt_send_booking_confirmation_de(booking_id : int):
+	booking : VPT_booking = vpt_bookings[booking_id]
+	assert booking.language == "DE"
+
+	message = tmplt.vpt_de_booking_confirmation(booking)
+	send_mail(booking.email, "contact@vptmallorca.com", "Buchungsbestätigung VPT" + booking.booking_number, message)
+
+def vpt_send_quote_de(quote_id : int):
+	quote = VPT_quote = vpt_quotes[quote_id]
+	assert quote.language == "DE"
+
 
 
 
