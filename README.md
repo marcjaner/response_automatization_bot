@@ -16,3 +16,8 @@ This bot should include the following functionalities:
   - `/skip` -> If a booking needs to be processed manually this command should keep the message as an unread message
   - `/reply` -> In order to reply to a quote request, this command will require a price per transfer and a default email will be sended to the client.
 - Detect the correct language and send an email using the correct html template based on the language and the type of email.
+
+
+### Structure idea (pending more updates) 
+In order to manage the bot functionalitites the following modules will be used: 
+- `inteligent.py` : will include everything needed in order to generate a summary for each email. Furthermore, it will be able to return the list with all these summarized emails. 
