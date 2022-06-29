@@ -16,6 +16,39 @@ vpt_inbox = vpt.Folders(1)
 vpt_unread_bookings = list
 vpt_unread_quotes = list
 
+@dataclass
+class VPT_booking:
+	booking_number: str
+	name: str
+	fullname: str
+	email: str
+	phone: str
+	pax: int
+	pick_up_arrival: str
+	destination_arrival: str
+	arrival_date: str
+	arrival_time: str
+	flight_n_arrival: str
+	pick_up_departure: str
+	destination_departure: str
+	departure_date: str
+	pick_up_time: str
+	fligh_n_departure: str
+	origin: str
+	city: str
+	total: int
+	subtotal_first: int
+	subtotal_second: int
+	subtotal_third: int
+
+class VPT_quote:
+	name:str
+	pax: int
+	destination: str
+	price: str
+
+
+
 # --------------------------------------------------------------------------- #
 #                             JANERBUS VARIABLES                              #
 # --------------------------------------------------------------------------- #
