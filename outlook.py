@@ -14,8 +14,8 @@ mapi = outlook.GetNamespace("MAPI")
 # --------------------------------------------------------------------------- #
 vpt = mapi.Folders("contact@vptmallorca.com")
 vpt_inbox = vpt.Folders(1)
-vpt_unread_bookings = list
-vpt_unread_quotes = list
+vpt_unread_bookings_eng = list
+vpt_unread_quotes_eng = list
 
 @dataclass
 class VPT_booking:
@@ -84,24 +84,24 @@ def send_mail(to : str, from : str, subject : str, body : str):
 def vpt_get_unread_messages() -> list:
 	vpt_messages = vpt_inbox.Items
 
-	global vpt_unread_bookings
-	vpt_unread_bookings = []
-	global vpt_unread_quotes
-	vpt_unread_quotes = []
+	global vpt_unread_bookings_eng
+	vpt_unread_bookings_eng = []
+	global vpt_unread_quotes_eng
+	vpt_unread_quotes_eng = []
 
 	# global vpt_unread
 	for msg in list(vpt_messages):
 		if msg.UnRead == True:
-			if msg.Subject.startswith('Transfer de'):
-				vpt_unread_bookings.append(msg)
+			if msg.Subject.startswith('Transfer de') or msg.Subject.startswith('Re: VPTMallorca Quote'):
+				vpt_unread_bookings_eng.append(msg)
 			elif msg.Subject.startswith('Presupuesto de'):
-				vpt_unread_quotes.append(msg)
+				vpt_unread_quotes_eng.append(msg)
 
 
 
-def vpt_summarize_bookings():
+def vpt_summarize_bookings() -> list[VPT_booking]:
 
-def vpt_summarize_quotes():
+def vpt_summarize_quotes() -> list[VPT_quote]:
 
 def vpt_send_booking_confirmation_eng(booking_id : int):
 	booking : VPT_booking = vpt_bookings[booking_id]
@@ -120,8 +120,8 @@ def vpt_send_quote_eng(quote_id : int):
 
 def main():
 	vpt_get_unread_messages()
-	vpt_summarize_bookings(vpt_unread_bookings)
-	vpt_summarize_quotes(vpt_unread_quotes)
+	vpt_summarize_bookings(vpt_unread_bookings_eng)
+	vpt_summarize_quotes(vpt_unread_quotes_eng)
 
 
 main()
