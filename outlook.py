@@ -52,10 +52,10 @@ def vpt_get_unread_messages():
 				vpt_unread_quotes.append(msg)
 
 
-#
-# def vpt_summarize_bookings():
-#
-# def vpt_summarize_quotes():
+
+def vpt_summarize_bookings():
+
+def vpt_summarize_quotes():
 
 def main():
 	vpt_get_unread_messages()
