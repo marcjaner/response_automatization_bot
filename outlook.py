@@ -46,6 +46,7 @@ class VPT_booking:
 	subtotal_second: int
 	subtotal_third: int
 	language : str
+	status: str
 
 
 class VPT_quote:
@@ -55,6 +56,7 @@ class VPT_quote:
 	subtotal: int
 	total: int
 	language : str
+	status:str
 
 
 vpt_bookings : TypeAlias = list[VPT_booking]
