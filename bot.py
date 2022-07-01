@@ -37,12 +37,31 @@ def get_bookings(update, context):
 
     message : str = "Reserves: \n"
 
-    for booking in vpt_bookings:
-        message = message + 
+    for i in range(0, len(vpt_bookings)):
+        booking = vpt_bookings[i]
+
+        message = message + "**%d**. %s -> %s \n%s %d pax \n %s %s\n" % (i, booking.pick_up_arrival, booking.destination_arrival, booking.arrival_date, booking.pax, booking.arrival_time, booking.flight_n_arrival)
+
+        if booking.pick_up_departure is not None:
+            message = message + "%s -> %s \n %s %s %s\n" % (booking.pick_up_departure, booking.destination_departure, booking.departure_date, booking.departure_time, booking.flight_n_departure)
+        message = message + "\n"
+
+    context.user_data['index'] = len(vpt_bookings - 1)
+
+    context.bot.send_message(chat_id=update.effective_chat.id, text = message)
 
 def get_quotes(update, context):
     otl.vpt_summarize_quotes_eng()
     otl.vpt_summarize_quotes_de()
+
+    message : str = "Pressuposts: /n"
+
+    for i in range(context.user_data['index'], context.user_data['index'] + len(vpt_quotes)):
+        quote = vpt_quotes[i]
+
+        message = message + "%d. %s %d pax \n\N" % (i, quote.destination, quote.pax)
+
+    context.bot.send_message(chat_id=update.effective_chat.id, text = message)
 
 
 def get(update, context):
