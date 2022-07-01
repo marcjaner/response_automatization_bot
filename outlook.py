@@ -119,9 +119,11 @@ def vpt_get_unread_messages() -> list:
 
 
 
-def vpt_summarize_bookings() -> list[VPT_booking]:
+def vpt_summarize_bookings_eng() -> list[VPT_booking]:
+def vpt_summarize_quotes_eng() -> list[VPT_quote]:
 
-def vpt_summarize_quotes() -> list[VPT_quote]:
+def vpt_summarize_bookings_de() -> list[VPT_booking]:
+def vpt_summarize_quotes_de() -> list[VPT_quote]:
 
 #------------------------------------ENG--------------------------------------#
 
