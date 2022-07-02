@@ -12,7 +12,7 @@ dispatcher = updater.dispatcher
 
 vpt_unread_bookings_eng : TypeAlias = list
 vpt_unread_quotes_eng : TypeAlias = list
-vpt_unread_bookings_de : TypeAlias = list
+vpt_unread_bookings_de : TypeAlias = list 
 vpt_unread_quotes_de : TypeAlias = list
 
 VPT_booking : TypeAlias = otl.VPT_booking

@@ -2,6 +2,7 @@ from typing_extensions import TypeAlias
 from dataclasses import dataclass
 import templates as tmplt
 import win32com.client
+from win32printing import Printer
 
 # --------------------------------------------------------------------------- #
 #                              GLOBAL VARIABLES                               #
@@ -51,6 +52,7 @@ class VPT_booking:
 
 class VPT_quote:
 	name:str
+	email:str
 	pax: int
 	destination: str
 	subtotal: int
@@ -76,13 +78,17 @@ vpt_quotes : TypeAlias = list[VPT_quote]
 #                               GLOBAL MODULES                                #
 # --------------------------------------------------------------------------- #
 
-def send_mail(to : str, from : str, subject : str, body : str):
+def send_message(to : str, acc : str, subject : str, body : str):
 	mail = outlook.CreateItem(0)
 	mail.Subject = subject
 	mail.To = to
-	mail.From = from
+	mail.From = acc
 	mail.HTMLbody = body
 	mail.send()
+
+def print_booking(body : str):
+	with Printer(printer_name = "Kyocera ECOSYS P2040dn") as printer:
+		printer.text(body)
 
 
 
@@ -92,40 +98,56 @@ def send_mail(to : str, from : str, subject : str, body : str):
 
 def vpt_get_unread_messages() -> list:
 	vpt_messages = vpt_inbox.Items
-#------------------------------------ENG--------------------------------------#
+      #------------------------------ENG--------------------------------#
 	global vpt_unread_bookings_eng
 	vpt_unread_bookings_eng = []
 	global vpt_unread_quotes_eng
 	vpt_unread_quotes_eng = []
 
-#-------------------------------------DE--------------------------------------#
+      #-------------------------------DE--------------------------------#
 	global vpt_unread_bookings_de
 	vpt_unread_bookings_de = []
 	global vpt_unread_quotes_de
 	vpt_unread_quotes_de = []
 
-	# global vpt_unread
+	global vpt_unread
 	for msg in list(vpt_messages):
 		if msg.UnRead == True:
-#------------------------------------ENG--------------------------------------#
+       #------------------------------ENG--------------------------------#
 			if msg.Subject.startswith('Transfer de') or msg.Subject.startswith('Re: VPTMallorca Quote'):
 				vpt_unread_bookings_eng.append(msg)
 			elif msg.Subject.startswith('Presupuesto de'):
 				vpt_unread_quotes_eng.append(msg)
-#-------------------------------------DE--------------------------------------#
+
+       #-------------------------------DE--------------------------------#
 			elif msg.Subject.startswith('Reserva de'):
 				vpt_unread_bookings_de.append(msg)
 			elif msg.Subject.startswith('Transferpreise vom'):
 				vpt_unread_quotes_de.append(msg)
 
 
-
-
-def vpt_summarize_bookings_eng() -> list[VPT_booking]:
+# def vpt_summarize_bookings_eng() -> list[VPT_booking]:
 def vpt_summarize_quotes_eng() -> list[VPT_quote]:
+	global vpt_quotes
+	for message in vpt_unread_quotes_eng:
+		previous_word = None
+		
+		for word in message.body:
+			if previous_word is "Name:":
+				name = word
+			elif previous_word is "Email:":
+				email = word.lower()
+			elif previous_word is "Destination:":
+				destination = word
+			elif previous_word is "Pax:":
+				pax = word
+			previous_word = word
 
-def vpt_summarize_bookings_eng() -> list[VPT_booking]:
-def vpt_summarize_quotes_eng() -> list[VPT_quote]:
+		quote = VPT_quote(name, email, int(pax), destination, None, None, "ENG", "pending")
+		vpt_quotes.append(quote)
+
+# def vpt_summarize_bookings_eng() -> list[VPT_booking]:
+# def vpt_summarize_quotes_eng() -> list[VPT_quote]:
 
 #------------------------------------ENG--------------------------------------#
 
@@ -134,14 +156,16 @@ def vpt_send_booking_confirmation_eng(booking_id : int):
 	assert booking.language == "ENG"
 	message = tmplt.vpt_eng_booking_confirmation(booking)
 
-	send_mail(booking.email, "contact@vptmallorca.com", "Transfer confirmation VPT" + booking.booking_number, message)
+	send_message(booking.email, "contact@vptmallorca.com", "Transfer confirmation VPT" + booking.booking_number, message)
+
+	print_booking(booking.body)
 
 def vpt_send_quote_eng(quote_id : int):
 	quote = VPT_quote = vpt_quotes[quote_id]
 	assert quote.language == "ENG"
 	message = tmplt.vpt_eng_quote(quote)
 
-	send_mail(quote.email, "contact@vptamllorca.com", "VPTMallorca Quote", message)
+	send_message(quote.email, "contact@vptamllorca.com", "VPTMallorca Quote", message)
 
 #-------------------------------------DE--------------------------------------#
 def vpt_send_booking_confirmation_de(booking_id : int):
@@ -149,7 +173,7 @@ def vpt_send_booking_confirmation_de(booking_id : int):
 	assert booking.language == "DE"
 
 	message = tmplt.vpt_de_booking_confirmation(booking)
-	send_mail(booking.email, "contact@vptmallorca.com", "Buchungsbestätigung VPT" + booking.booking_number, message)
+	send_message(booking.email, "contact@vptmallorca.com", "Buchungsbestätigung VPT" + booking.booking_number, message)
 
 def vpt_send_quote_de(quote_id : int):
 	quote = VPT_quote = vpt_quotes[quote_id]
