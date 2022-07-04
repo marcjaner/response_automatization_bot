@@ -105,6 +105,7 @@ def manage_bookings()-> list:
 		else:
 			booking.language = 'ESP'
 		bookings.append(booking)
-	print(bookings)
+	return bookings
 
-manage_bookings()
+bookings = manage_bookings()
+print(booking)
