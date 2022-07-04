@@ -57,7 +57,7 @@ def get_bookings(update, context):
 
 def get_quotes(update, context):
     try:
-        manage_messages()
+        otl.manage_messages()
 
         message : str = "Pressuposts: /n"
 

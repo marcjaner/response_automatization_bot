@@ -105,8 +105,9 @@ def vpt_get_unread_messages(vpt_unread_bookings: list, vpt_unread_quotes: list) 
 				vpt_unread_bookings.append(msg)
 			elif msg.Subject.startswith('Presupuesto de') or msg.Subject.startswith('Transferpreise vom'):
 				vpt_unread_quotes.append(msg)
+			msg.UnRead == False
 
-def treat_email(msg_body: list)-> None:
+def treat_booking(msg_body: list)-> None:
 	""" removes empty index """
 	for string in msg_body:
 		if string == '':
@@ -125,6 +126,24 @@ def get_booking_class(booking_info: list)-> VPT_booking:
 	aux_class = VPT_booking(None, booking_info[0],booking_info[1],booking_info[2],booking_info[3],booking_info[4],booking_info[5],booking_info[6],booking_info[7],booking_info[8],booking_info[9],booking_info[10],booking_info[11],booking_info[12],booking_info[13],booking_info[14],booking_info[15],booking_info[16],None, None,None,None,None,None,None,None)
 	return aux_class
 
+def treat_quote(msg_body : list)-> None:
+    """ removes empty index """
+    for string in msg_body:
+        if string == '':
+            msg_body.remove('')
+
+def get_quote(msg_body: list)-> list:
+	""" returns a list with the info needed to create an instance of VPT_quote """
+	quote_info = []
+	for string in msg_body:
+		if ":" in string:
+			quote_info.append(string.split(":")[1])
+	return quote_info
+
+def get_quote_class(quote_info: list)-> VPT_quote:
+    """ from the info list, creates an instance of the quote class """
+    quote = VPT_quote(quote_info[0],quote_info[1],quote_info[2],quote_info[3], None, None, None, None)
+    return quote
 
 def manage_messages()-> list:
 	""" updates and manages bookings, returns a list with all the new bookings """
@@ -137,7 +156,7 @@ def manage_messages()-> list:
 		msg_body = vpt_unread_bookings[i].Body.replace("\n","").split("\r")
 		subject = vpt_unread_bookings[i].Subject
 
-		treat_email(msg_body)
+		treat_booking(msg_body)
 
 		# get info in order to initialize the VPT_booking dataclass
 		info_list = get_booking(msg_body)
@@ -154,11 +173,28 @@ def manage_messages()-> list:
 			booking.language = 'ESP'
 		vpt_bookings.append(booking)
 
-		
+
 	vpt_quotes[]
 	assert lent(vpt_unread_quotes) > 0
 	for i in range(0, len(vpt_unread_quotes)):
+		# pre-process the e-mail in order to treat it correctly
+        msg_body = vpt_unread_quotes[i].Body.replace("\n","").split("\r")
+        subject = vpt_unread_quotes[i].Subject
 
+        treat_quote(msg_body)
+
+        quote_info = get_quote(msg_body)
+
+        quote = get_quote_class(quote_info)
+
+        if subject.startswith('Presupuesto de'):
+            quote.language = 'ENG'
+        elif subject.startswith('Transferpreise vom'):
+            quote.language = 'DE'
+        else:
+            quote.language = 'ESP'
+
+        vpt_quotes.append(quote)
 
 #------------------------------------ENG--------------------------------------#
 
