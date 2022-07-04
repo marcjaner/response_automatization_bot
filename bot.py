@@ -12,7 +12,7 @@ dispatcher = updater.dispatcher
 
 vpt_unread_bookings_eng : TypeAlias = list
 vpt_unread_quotes_eng : TypeAlias = list
-vpt_unread_bookings_de : TypeAlias = list 
+vpt_unread_bookings_de : TypeAlias = list
 vpt_unread_quotes_de : TypeAlias = list
 
 VPT_booking : TypeAlias = otl.VPT_booking
@@ -33,8 +33,7 @@ def start(update, context):
 
 def get_bookings(update, context):
     try:
-        otl.vpt_summarize_bookings_eng()
-        otl.vpt_summarize_bookings_de()
+        otl.manage_messages()
 
         message : str = "Reserves: \n"
 
@@ -58,8 +57,7 @@ def get_bookings(update, context):
 
 def get_quotes(update, context):
     try:
-        otl.vpt_summarize_quotes_eng()
-        otl.vpt_summarize_quotes_de()
+        manage_messages()
 
         message : str = "Pressuposts: /n"
 
