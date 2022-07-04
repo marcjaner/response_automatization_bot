@@ -3,11 +3,12 @@ from dataclasses import dataclass
 import templates as tmplt
 import win32com.client
 from win32printing import Printer
+import pythoncom
 
 # --------------------------------------------------------------------------- #
 #                              GLOBAL VARIABLES                               #
 # --------------------------------------------------------------------------- #
-outlook = win32com.client.Dispatch('outlook.application')
+outlook = win32com.client.Dispatch('outlook.application', pythoncom.CoInitialize())
 mapi = outlook.GetNamespace("MAPI")
 
 # --------------------------------------------------------------------------- #
@@ -16,8 +17,6 @@ mapi = outlook.GetNamespace("MAPI")
 vpt = mapi.Folders("contact@vptmallorca.com")
 vpt_inbox = vpt.Folders(1)
 #------------------------------------ENG--------------------------------------#
-vpt_unread_bookings = list
-vpt_unread_quotes = list
 
 
 
@@ -38,7 +37,7 @@ class VPT_booking:
 	destination_departure: str
 	departure_date: str
 	departure_time: str
-	fligh_n_departure: str
+	flight_n_departure: str
 	baby_seat: str
 	child_seat: str
 	origin: str
@@ -50,6 +49,7 @@ class VPT_booking:
 	language : str
 	status: str
 
+@dataclass
 class VPT_quote:
 	name:str
 	email:str
@@ -69,9 +69,9 @@ vpt_quotes : TypeAlias = list[VPT_quote]
 # --------------------------------------------------------------------------- #
 #                             JANERBUS VARIABLES                              #
 # --------------------------------------------------------------------------- #
-jb = mapi.Folders("bus@janer-bus.com")
-jb_inbox = jb.Folders(1)
-jb_messages = jb_inbox.Items
+# jb = mapi.Folders("bus@janer-bus.com")
+# jb_inbox = jb.Folders(1)
+# jb_messages = jb_inbox.Items
 
 
 # --------------------------------------------------------------------------- #
@@ -96,7 +96,7 @@ def print_booking(body : str):
 #                                VPT MODULES                                  #
 # --------------------------------------------------------------------------- #
 
-def vpt_get_unread_messages(vpt_unread_bookings: list, vpt_unread_quotes: list) -> None:
+def vpt_get_unread_messages(vpt_unread_bookings, vpt_unread_quotes) -> None:
 	vpt_messages = vpt_inbox.Items
       #------------------------------ENG--------------------------------#
 	for msg in list(vpt_messages):
@@ -105,7 +105,6 @@ def vpt_get_unread_messages(vpt_unread_bookings: list, vpt_unread_quotes: list) 
 				vpt_unread_bookings.append(msg)
 			elif msg.Subject.startswith('Presupuesto de') or msg.Subject.startswith('Transferpreise vom'):
 				vpt_unread_quotes.append(msg)
-			msg.UnRead == False
 
 def treat_booking(msg_body: list)-> None:
 	""" removes empty index """
@@ -145,10 +144,16 @@ def get_quote_class(quote_info: list)-> VPT_quote:
     quote = VPT_quote(quote_info[0],quote_info[1],quote_info[2],quote_info[3], None, None, None, None)
     return quote
 
-def manage_messages()-> list:
+
+
+
+def manage_bookings()-> list:
 	""" updates and manages bookings, returns a list with all the new bookings """
+	vpt_unread_bookings = []
+	vpt_unread_quotes = []
 	# updates global variables with new unread messages
 	vpt_get_unread_messages(vpt_unread_bookings, vpt_unread_quotes)
+
 	vpt_bookings = []
 	assert len(vpt_unread_bookings)>0
 	for i in range(0, len(vpt_unread_bookings)):
@@ -173,28 +178,38 @@ def manage_messages()-> list:
 			booking.language = 'ESP'
 		vpt_bookings.append(booking)
 
+	return vpt_bookings
 
-	vpt_quotes[]
-	assert lent(vpt_unread_quotes) > 0
+
+def manage_quotes()-> list:
+	""" updates and manages bookings, returns a list with all the new bookings """
+	# updates global variables with new unread messages
+	vpt_unread_bookings = []
+	vpt_unread_quotes = []
+	vpt_get_unread_messages(vpt_unread_bookings, vpt_unread_quotes)
+
+	vpt_quotes = []
+	assert len(vpt_unread_quotes) > 0
 	for i in range(0, len(vpt_unread_quotes)):
 		# pre-process the e-mail in order to treat it correctly
-        msg_body = vpt_unread_quotes[i].Body.replace("\n","").split("\r")
-        subject = vpt_unread_quotes[i].Subject
+		msg_body = vpt_unread_quotes[i].Body.replace("\n","").split("\r")
+		subject = vpt_unread_quotes[i].Subject
 
-        treat_quote(msg_body)
+		treat_quote(msg_body)
 
-        quote_info = get_quote(msg_body)
+		quote_info = get_quote(msg_body)
 
-        quote = get_quote_class(quote_info)
+		quote = get_quote_class(quote_info)
 
-        if subject.startswith('Presupuesto de'):
-            quote.language = 'ENG'
-        elif subject.startswith('Transferpreise vom'):
-            quote.language = 'DE'
-        else:
-            quote.language = 'ESP'
+		if subject.startswith('Presupuesto de'):
+			quote.language = 'ENG'
+		elif subject.startswith('Transferpreise vom'):
+			quote.language = 'DE'
+		else:
+			quote.language = 'ESP'
 
-        vpt_quotes.append(quote)
+		vpt_quotes.append(quote)
+	return vpt_quotes
 
 #------------------------------------ENG--------------------------------------#
 
@@ -227,14 +242,11 @@ def vpt_send_quote_de(quote_id : int):
 	assert quote.language == "DE"
 
 
-
-
-
 def main():
-	manage_messages()
+	manage_bookings()
+	manage_quotes()
 
 main()
-
 # --------------------------------------------------------------------------- #
 #                              JANERBUS MODULES                               #
 # --------------------------------------------------------------------------- #
