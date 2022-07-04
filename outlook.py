@@ -69,9 +69,9 @@ vpt_quotes : TypeAlias = list[VPT_quote]
 # --------------------------------------------------------------------------- #
 #                             JANERBUS VARIABLES                              #
 # --------------------------------------------------------------------------- #
-# jb = mapi.Folders("bus@janer-bus.com")
-# jb_inbox = jb.Folders(1)
-# jb_messages = jb_inbox.Items
+jb = mapi.Folders("bus@janer-bus.com")
+jb_inbox = jb.Folders(1)
+jb_messages = jb_inbox.Items
 
 
 # --------------------------------------------------------------------------- #
@@ -131,10 +131,15 @@ def vpt_summarize_quotes_eng() -> list[VPT_quote]:
 	global vpt_quotes
 	for message in vpt_unread_quotes_eng:
 		previous_word = None
-		
+
 		for word in message.body:
 			if previous_word is "Name:":
 				name = word
+				for word in message.body:
+					if word is not "Email:":
+						name = name + " " + word
+
+
 			elif previous_word is "Email:":
 				email = word.lower()
 			elif previous_word is "Destination:":
