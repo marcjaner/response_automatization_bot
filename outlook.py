@@ -26,10 +26,10 @@ vpt_unread_quotes_de = list
 class VPT_booking:
 	booking_number: str
 	name: str
-	fullname: str
 	email: str
 	phone: str
 	pax: int
+	type_transf: str
 	pick_up_arrival: str
 	destination_arrival: str
 	arrival_date: str
@@ -38,8 +38,10 @@ class VPT_booking:
 	pick_up_departure: str
 	destination_departure: str
 	departure_date: str
-	pick_up_time: str
+	departure_time: str
 	fligh_n_departure: str
+	baby_seat: str
+	child_seat: str
 	origin: str
 	city: str
 	total: int
