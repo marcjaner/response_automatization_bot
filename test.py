@@ -22,19 +22,19 @@ def start(update, context):
     message: str = "Hola %s, \nAquests són es missatges pendents per contestar. Per qualsevol dubte fés servir sa comanda /help" % (name)
     context.bot.send_message(chat_id=update.effective_chat.id, text=message)
 
+
 def get_bookings(update, context):
     try:
 
         message : str = "Reserves: \n"
-        print(vpt_bookings, "hola")
 
         for i in range(0, len(vpt_bookings)):
             booking = vpt_bookings[i]
 
-            message = message + "%s. %s -> %s \n%s %s pax \n %s %s\n" % (i, booking.pick_up_arrival, booking.destination_arrival, booking.arrival_date, booking.pax, booking.arrival_time, booking.flight_n_arrival)
+            message = message + "%s. %s -> %s \n%s %s pax %s %s\n" % (i, booking.pick_up_arrival, booking.destination_arrival, booking.arrival_date, booking.pax, booking.arrival_time, booking.flight_n_arrival.upper())
 
-            if booking.pick_up_departure is not None:
-                message = message + "%s -> %s \n %s %s %s\n" % (booking.pick_up_departure, booking.destination_departure, booking.departure_date, booking.departure_time, booking.flight_n_departure)
+            if booking.flight_n_departure != '':
+                message = message + "%s -> %s \n%s %s %s\n" % (booking.pick_up_departure, booking.destination_departure, booking.departure_date, booking.departure_time, booking.flight_n_departure.upper())
             message = message + "\n"
 
         context.user_data['index'] = len(vpt_bookings )-1
@@ -44,6 +44,46 @@ def get_bookings(update, context):
         print(e)
 
         context.bot.send_message(chat_id=update.effective_chat.id, text="Hi ha hagut algun error")
+
+def get_quotes(update, context):
+    try:
+
+
+        message : str = "Pressuposts: \n"
+
+        for i in range(0, len(vpt_quotes)):
+            quote = vpt_quotes[i]
+
+            message = message + "%s. %s %s pax \n\n" % (i, quote.destination, quote.pax)
+
+        context.bot.send_message(chat_id=update.effective_chat.id, text = message)
+    except Exception as e:
+        print(e)
+
+        context.bot.send_message(chat_id=update.effective_chat.id, text="Hi ha hagut algun problema")
+
+
+def yes(update, context):
+    """ accepts a certain booking """
+    """ parameters to take: [index] [nº reserva] [preu] [desti(ciutat)]
+    parameters to take optionally: [origen(si es diferent a s'aeroport)] [comentaris adicionals] """
+    try:
+        index = context.args[0]
+        id = context.args[1]
+        price = context.args[2]
+        dst = context.args[3].split(',')
+        orig = context.args[4].split(',')
+        comments = context.args[5].split(',')
+
+    except Exception as e:
+        print(e)
+        context.bot.send_message(chat_id=update.effective_chat.id, text="Hi ha hagut algun problema")
+
+def no(update, context):
+    """ rejects a certain booking """
+    """ parameters to take:  [index] [comentaris adicionals(opcional)] """
+
+
 
 
 
@@ -60,9 +100,9 @@ dispatcher = updater.dispatcher
 
 dispatcher.add_handler(CommandHandler('start', start))
 dispatcher.add_handler(CommandHandler('help', help))
-# dispatcher.add_handler(CommandHandler('get', get))
+dispatcher.add_handler(CommandHandler('yes', yes))
 dispatcher.add_handler(CommandHandler('getb', get_bookings))
-# dispatcher.add_handler(CommandHandler('getq', get_quotes))
+dispatcher.add_handler(CommandHandler('getq', get_quotes))
 
 updater.start_polling()
 updater.idle()

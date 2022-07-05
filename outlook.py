@@ -24,6 +24,7 @@ vpt_inbox = vpt.Folders(1)
 class VPT_booking:
 	booking_number: str
 	name: str
+	fullname: str
 	email: str
 	phone: str
 	pax: int
@@ -116,8 +117,12 @@ def get_booking(msg_body: list)-> list:
 	""" returns a list with the info needed to create an instance of VPT_booking """
 	booking_info = []
 	for string in msg_body:
-		if ":" in string:
+		if ":" in string and string.count(":") == 1:
 			booking_info.append(string.split(":")[1])
+		elif ":" in string and string.count(":")>1:
+			index = index_two_points(string)
+			word = string[index+1:len(string)]
+			booking_info.append(word)
 	return booking_info
 
 def get_booking_class(booking_info: list)-> VPT_booking:
@@ -131,17 +136,31 @@ def treat_quote(msg_body : list)-> None:
         if string == '':
             msg_body.remove('')
 
+
+
+def index_two_points(word: str)-> int:
+	""" given a string, returns the index of the string in which we find the first ':' character """
+	for i in range(0, len(word)):
+		if word[i] == ':':
+			return i
+
+
 def get_quote(msg_body: list)-> list:
 	""" returns a list with the info needed to create an instance of VPT_quote """
 	quote_info = []
 	for string in msg_body:
-		if ":" in string:
+		if ":" in string and string.count(":") == 1:
 			quote_info.append(string.split(":")[1])
+		elif ":" in string and string.count(":")>1:
+			index = index_two_points(string)
+			word = string[index+1:-1]
+			quote_info.append(word)
+
 	return quote_info
 
 def get_quote_class(quote_info: list)-> VPT_quote:
     """ from the info list, creates an instance of the quote class """
-    quote = VPT_quote(quote_info[0],quote_info[1],quote_info[2],quote_info[3], None, None, None, None)
+    quote = VPT_quote(quote_info[0],quote_info[1],quote_info[3],quote_info[2], None, None, None, None)
     return quote
 
 
