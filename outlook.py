@@ -82,10 +82,11 @@ vpt_quotes : TypeAlias = list[VPT_quote]
 def send_message(to : str, acc : str, subject : str, body : str):
 	mail = outlook.CreateItem(0)
 	mail.Subject = subject
+	From = outlook.Session.Accounts[acc]
 	mail.To = to
-	mail.From = acc
 	mail.HTMLbody = body
-	mail.send()
+	mail._oleobj_.Invoke(*(64209, 0, 8, 0, From))
+	mail.Send()
 
 def print_booking(body : str):
 	with Printer(printer_name = "Kyocera ECOSYS P2040dn") as printer:

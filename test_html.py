@@ -41,21 +41,45 @@ class VPT_booking:
 	language : str
 	status: str
 
+@dataclass
+class VPT_quote:
+	name:str
+	email:str
+	pax: int
+	destination: str
+	subtotal: int
+	total: int
+	language : str
+	status:str
+
 booking = VPT_booking("VPT123-1609", "Marc", "Marc Janer", "marcjanerferrer@gmail.com", "636990408", "6", "round", "Palma Airport", "Alcudia", "06/07/2022", "10:35 pm", "VLG5678", "Alcudia", "Palma Airport", "14/07/2022", "9:00 am", "UX6730", None, None, "Palma Airport", "Alcudia", 144, 72, 30, 42, "DE", None)
 
-def send_message(to : str, subject : str, body : str):
+quote = VPT_quote("Marc", "marcjanerferrer@gmail.com", "5", "Cala d'Or", 74, 148, None, None)
+
+def send_message(to : str, acc : str, subject : str, body : str):
 	mail = outlook.CreateItem(0)
 	mail.Subject = subject
+	From = outlook.Session.Accounts[acc]
 	mail.To = to
 	mail.HTMLbody = body
+	mail._oleobj_.Invoke(*(64209, 0, 8, 0, From))
 	mail.Send()
+
+# def main():
+#     to = booking.email
+#     subject = "Booking confirmation " + booking.booking_number
+#     body = tmplt.vpt_de_booking_confirmation(booking)
+#     acc = "contact@vptmallorca.com"
+#     print("Template formated")
+#     print(type(body))
+#     send_message(to, acc, subject, body)
+#     print("Message sent
 
 def main():
     to = booking.email
-    subject = "Booking confirmation " + booking.booking_number
-    body = tmplt.vpt_eng_booking_confirmation(booking)
-    print("Template formated")
-    print(type(body))
-    send_message(to, subject, body)
-    print("Message sent")
+    subject = "VPTMallorca quote"
+    body = tmplt.vpt_eng_quote(quote)
+    acc = "contact@vptmallorca.com"
+    send_message(to, acc, subject, body)
+
 main()
