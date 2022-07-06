@@ -2,7 +2,7 @@ from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 import os
 from typing import List, Union, Dict, Optional
 from typing_extensions import TypeAlias
-from outlook import*
+import outlook as otl
 
 
 
@@ -11,8 +11,11 @@ vpt_unread_quotes_eng : TypeAlias = list
 vpt_unread_bookings_de : TypeAlias = list
 vpt_unread_quotes_de : TypeAlias = list
 
-vpt_bookings : TypeAlias = list[VPT_booking]
-vpt_quotes : TypeAlias = list[VPT_quote]
+vpt_bookings : TypeAlias = list[otl.VPT_booking]
+vpt_quotes : TypeAlias = list[otl.VPT_quote]
+
+vpt_bookings = otl.manage_bookings()
+vpt_quotes = otl.manage_quotes()
 
 # --------------------------------------------------------------------------- #
 #                                  COMMANDS                                   #
@@ -24,57 +27,35 @@ def start(update, context):
     context.bot.send_message(chat_id=update.effective_chat.id, text=message)
     get(update, context)
 
-def get_bookings(update, context):
+def get(update, context):
     try:
-
         message : str = "Reserves: \n"
-        vpt_bookings = manage_bookings()
-        print(vpt_bookings, "hola")
 
         for i in range(0, len(vpt_bookings)):
             booking = vpt_bookings[i]
 
-            message = message + "%d. %s -> %s \n%s %d pax \n %s %s\n" % (i, booking.pick_up_arrival, booking.destination_arrival, booking.arrival_date, booking.pax, booking.arrival_time, booking.flight_n_arrival)
+            message = message + "%d. %s -> %s \n    %s pax %s %s %s\n" % (i, booking.pick_up_arrival, booking.destination_arrival, booking.pax, booking.arrival_date, booking.arrival_time, booking.flight_n_arrival.upper())
 
-            if booking.pick_up_departure is not None:
-                message = message + "%s -> %s \n %s %s %s\n" % (booking.pick_up_departure, booking.destination_departure, booking.departure_date, booking.departure_time, booking.flight_n_departure)
+            if booking.type_transf != ' One way':
+                message = message + "    %s -> %s \n    %s %s %s\n" % (booking.pick_up_departure, booking.destination_departure, booking.departure_date, booking.departure_time, booking.flight_n_departure)
+
+            print(booking.name + " " + booking.fullname + " " + booking.email + " " + booking.phone + " " + booking.pax + " " + booking.pick_up_arrival)
             message = message + "\n"
-
-        context.user_data['index'] = len(vpt_bookings)-1
-
-        context.bot.send_message(chat_id=update.effective_chat.id, text = message)
-    except Exception as e:
-        print(e)
-
-        context.bot.send_message(chat_id=update.effective_chat.id, text="Hi ha hagut algun error")
+        message = message + "\n" + "Pressuposts: \n"
 
 
-def get_quotes(update, context):
-    try:
-        print("prova")
-
-
-        message : str = "Pressuposts: /n"
-
-        vpt_quotes = manage_quotes()
-
-        for i in range(context.user_data['index'], context.user_data['index'] + len(vpt_quotes)):
+        for i in range(0, len(vpt_quotes)):
             quote = vpt_quotes[i]
 
-            message = message + "%d. %s %d pax \n\n" % (i, quote.destination, quote.pax)
+            message = message + "%s. %s %s pax \n\n" % (i + len(vpt_bookings), quote.destination, quote.pax)
 
         context.bot.send_message(chat_id=update.effective_chat.id, text = message)
+
     except Exception as e:
         print(e)
 
         context.bot.send_message(chat_id=update.effective_chat.id, text="Hi ha hagut algun problema")
 
-
-def get(update, context):
-    try:
-
-        get_bookings(update, context)
-        get_quotes(update, context)
 
 
     except Exception as e:
@@ -87,6 +68,45 @@ def help(update, context):
 
     context.bot.send_message(chat_id=update.effective_chat.id, text =message)
 
+def yes(update, context):
+    try:
+        booking : otl.VPT_booking = vpt_bookings[int(context.args[0])]
+        parameters = context.args[1].split(',')
+        booking.booking_number = parameters[0]
+
+        booking.subtotal_first = int(parameters[1])
+        booking.total = booking.subtotal_first * 2
+        booking.subtotal_second = 10 * round(int(booking.subtotal_first) * 0.4 / 10)
+        booking.subtotal_third = int(booking.subtotal_first - booking.subtotal_second)
+
+        booking.city = parameters[2]
+        print("correcte")
+        i = 2
+
+        for arg in context.args:
+            if arg.startswith("correct"):
+                print(context.args[i][8 : len(str(context.args[i]))])
+                change = str(context.args[i][8:int(len(str(context.args[i])))]).split(',')
+
+                for attribute, value in booking.__dict__.items():
+                    if value == change[0]:
+                        attribute = change[1]
+                        print (change[0] + " " + change[1])
+
+
+        if booking.language == "ENG":
+            otl.vpt_send_booking_confirmation_eng(booking)
+        else:
+            otl.vpt_send_booking_confirmation_de(booking)
+        # elif booking.language == "ES":
+        #     otl.vpt_send_booking_confirmation_es(booking)
+
+
+
+
+    except Exception as e:
+        print(e)
+
 
 # --------------------------------------------------------------------------- #
 #                              COMMAND HANDLERS                               #
@@ -98,8 +118,7 @@ dispatcher = updater.dispatcher
 dispatcher.add_handler(CommandHandler('start', start))
 dispatcher.add_handler(CommandHandler('help', help))
 dispatcher.add_handler(CommandHandler('get', get))
-dispatcher.add_handler(CommandHandler('getb', get_bookings))
-dispatcher.add_handler(CommandHandler('getq', get_quotes))
+dispatcher.add_handler(CommandHandler('yes', yes))
 
 updater.start_polling()
 updater.idle()
