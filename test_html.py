@@ -77,8 +77,8 @@ def send_message(to : str, acc : str, subject : str, body : str):
 
 def main():
     to = booking.email
-    subject = "VPTMallorca quote"
-    body = tmplt.vpt_eng_quote(quote)
+    subject = "Confirmación de reserva " + booking.booking_number
+    body = tmplt.vpt_es_booking_confirmation(booking)
     acc = "contact@vptmallorca.com"
     send_message(to, acc, subject, body)
 
