@@ -117,7 +117,21 @@ def no(update, context):
     elif booking.language == "ES":
         otl.vpt_reject_booking_es(booking)
 
+def reply(update, context):
+    index = context.args[0]
+    assert index >= len(vpt_bookings)
 
+    price = int(context.args[1])
+    quote.subtotal = price
+    quote.total = price * 2
+
+    quote = vpt_quotes[index]
+    if quote.language == "ENG":
+        otl.vpt_send_quote_eng(quote)
+    elif quote.language == "DE":
+        otl.vpt_send_quote_de(quote)
+    elif quote.language == "ES":
+        otl.vpt_send_quote_es(quote)
 
 
 # --------------------------------------------------------------------------- #

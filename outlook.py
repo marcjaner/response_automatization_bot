@@ -261,8 +261,7 @@ def vpt_reject_booking_eng(booking : VPT_booking):
 	send_message(booking.email, "contact@vptmallorca.com", "VPTMallorca transfer", message)
 
 
-def vpt_send_quote_eng(quote_id : int):
-	quote = VPT_quote = vpt_quotes[quote_id]
+def vpt_send_quote_eng(quote : VPT_quote):
 	assert quote.language == "ENG"
 	message = tmplt.vpt_eng_quote(quote)
 
@@ -280,7 +279,7 @@ def vpt_reject_booking_de(booking : VPT_booking):
 
 	send_message(booking.email, "contact@vptmallorca.com", "VPTMallorca transfer", message)
 
-def vpt_send_quote_de(quote_id : int):
+def vpt_send_quote_de(quote : VPT_quote):
 	quote = VPT_quote = vpt_quotes[quote_id]
 	assert quote.language == "DE"
 
