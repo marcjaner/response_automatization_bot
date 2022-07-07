@@ -14,9 +14,6 @@ vpt_unread_quotes_de : TypeAlias = list
 vpt_bookings : TypeAlias = list[otl.VPT_booking]
 vpt_quotes : TypeAlias = list[otl.VPT_quote]
 
-vpt_bookings = otl.manage_bookings()
-vpt_quotes = otl.manage_quotes()
-
 # --------------------------------------------------------------------------- #
 #                                  COMMANDS                                   #
 # --------------------------------------------------------------------------- #
@@ -29,6 +26,11 @@ def start(update, context):
 
 def get(update, context):
     try:
+        global vpt_bookings
+        vpt_bookings = otl.manage_bookings()
+        global vpt_quotes
+        vpt_quotes = otl.manage_quotes()
+
         message : str = "Reserves: \n"
 
         for i in range(0, len(vpt_bookings)):
@@ -39,7 +41,7 @@ def get(update, context):
             if booking.type_transf != ' One way':
                 message = message + "    %s -> %s \n    %s %s %s\n" % (booking.pick_up_departure, booking.destination_departure, booking.departure_date, booking.departure_time, booking.flight_n_departure)
 
-            print(booking.name + " " + booking.fullname + " " + booking.email + " " + booking.phone + " " + booking.pax + " " + booking.pick_up_arrival)
+
             message = message + "\n"
         message = message + "\n" + "Pressuposts: \n"
 
@@ -71,7 +73,7 @@ def help(update, context):
 def yes(update, context):
     try:
         booking : otl.VPT_booking = vpt_bookings[int(context.args[0])]
-        parameters = context.args[1].split(',')
+        parameters = context.args[1].replace('.', ' ').split(',')
         booking.booking_number = parameters[0]
 
         booking.subtotal_first = int(parameters[1])
@@ -80,19 +82,15 @@ def yes(update, context):
         booking.subtotal_third = int(booking.subtotal_first - booking.subtotal_second)
 
         booking.city = parameters[2]
-        print("correcte")
-        i = 2
 
         for arg in context.args:
             if arg.startswith("correct"):
-                print(context.args[i][8 : len(str(context.args[i]))])
-                change = str(context.args[i][8:int(len(str(context.args[i])))]).split(',')
+                change = str(arg[8:int(len(str(arg)))]).replace(".", " ").split(',')
 
                 for attribute, value in booking.__dict__.items():
-                    if value == change[0]:
-                        attribute = change[1]
-                        print (change[0] + " " + change[1])
-
+                    if str(value) == str(change[0]):
+                        for at, val in zip([attribute], [change[1]]):
+                            setattr(booking, at, val)
 
         if booking.language == "ENG":
             otl.vpt_send_booking_confirmation_eng(booking)
@@ -107,6 +105,20 @@ def yes(update, context):
     except Exception as e:
         print(e)
 
+def no(update, context):
+    index = context.args[0]
+    assert index < len(vpt_bookings)
+
+    booking = vpt_bookings[index]
+    if booking.language == "ENG":
+        otl.vpt_reject_booking_eng(booking)
+    elif booking.language == "DE":
+        otl.vpt_reject_booking_de(booking)
+    elif booking.language == "ES":
+        otl.vpt_reject_booking_es(booking)
+
+
+
 
 # --------------------------------------------------------------------------- #
 #                              COMMAND HANDLERS                               #
@@ -119,6 +131,8 @@ dispatcher.add_handler(CommandHandler('start', start))
 dispatcher.add_handler(CommandHandler('help', help))
 dispatcher.add_handler(CommandHandler('get', get))
 dispatcher.add_handler(CommandHandler('yes', yes))
+dispatcher.add_handler(CommandHandler('no', no))
+dispatcher.add_handler(CommandHandler('reply', reply))
 
 updater.start_polling()
 updater.idle()

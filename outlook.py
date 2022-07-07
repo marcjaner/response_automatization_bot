@@ -2,8 +2,11 @@ from typing_extensions import TypeAlias
 from dataclasses import dataclass
 import templates as tmplt
 import win32com.client
-from win32printing import Printer
+from win32 import win32print
+import win32api
 import pythoncom
+from fpdf import FPDF
+import os
 
 # --------------------------------------------------------------------------- #
 #                              GLOBAL VARIABLES                               #
@@ -49,6 +52,7 @@ class VPT_booking:
 	language : str
 	type_transf: str
 	status: str
+	body : str
 
 @dataclass
 class VPT_quote:
@@ -91,8 +95,16 @@ def send_message(to : str, acc : str, subject : str, body : str):
 	mail.Send()
 
 def print_booking(body : str):
-	with Printer(printer_name = "Kyocera ECOSYS P2040dn") as printer:
-		printer.text(body)
+	pdf = FPDF()
+	pdf.add_page()
+	pdf.set_font('Arial', '', 10)
+	for s in body:
+		pdf.cell(200, 10, txt = body, align= 'L')
+	pdf.output("booking_confirmation.pdf")
+
+	win32api.ShellExecute(0,"print","booking_confirmation.pdf", "Kyocera ECOSYS P2040dn",".",0)
+
+	# os.remove("booking_confirmation.pdf")
 
 
 
@@ -101,6 +113,8 @@ def print_booking(body : str):
 # --------------------------------------------------------------------------- #
 
 def vpt_get_unread_messages(vpt_unread_bookings, vpt_unread_quotes) -> None:
+	outlook = win32com.client.Dispatch('outlook.application', pythoncom.CoInitialize())
+	mapi = outlook.GetNamespace("MAPI")
 	vpt_messages = mapi.Folders("contact@vptmallorca.com").Folders(1).Items
       #------------------------------ENG--------------------------------#
 	for msg in list(vpt_messages):
@@ -121,7 +135,7 @@ def get_booking(msg_body: list)-> list:
 	booking_info = []
 	for string in msg_body:
 		if ":" in string and string.count(":") == 1:
-			booking_info.append(string.split(":")[1])
+			booking_info.append(string.split(": ")[1])
 		elif ":" in string and string.count(":")>1:
 			index = index_two_points(string)
 			word = string[index+1:len(string)]
@@ -130,7 +144,7 @@ def get_booking(msg_body: list)-> list:
 
 def get_booking_class(booking_info: list)-> VPT_booking:
 	""" creates an instance of the booking class from the info found in the auxiliary list created previously """
-	aux_class = VPT_booking(None, booking_info[0].split()[0].title(),booking_info[0].title(),booking_info[1].lower(),booking_info[2],booking_info[3],booking_info[5].title(),booking_info[6].title(),booking_info[7],booking_info[8],booking_info[9],booking_info[10],booking_info[11],booking_info[12],booking_info[13],booking_info[14],booking_info[15],booking_info[16],None, None,None,None,None,None,None,booking_info[4], None)
+	aux_class = VPT_booking(None, booking_info[0].split()[0].title(),booking_info[0].title(),booking_info[1].lower(),booking_info[2],booking_info[3],booking_info[5].title(),booking_info[6].title(),booking_info[7],booking_info[8],booking_info[9],booking_info[10],booking_info[11],booking_info[12],booking_info[13],booking_info[14],booking_info[15],booking_info[16],None, None,None,None,None,None,None,booking_info[4], None, None)
 	return aux_class
 
 def treat_quote(msg_body : list)-> None:
@@ -173,10 +187,8 @@ def manage_bookings()-> list:
 	""" updates and manages bookings, returns a list with all the new bookings """
 	vpt_unread_bookings = []
 	vpt_unread_quotes = []
-	print(1)
 	# updates global variables with new unread messages
 	vpt_get_unread_messages(vpt_unread_bookings, vpt_unread_quotes)
-	print(2)
 	vpt_bookings = []
 	for i in range(0, len(vpt_unread_bookings)):
 		# pre-process the e-mail in order to treat it correctly
@@ -198,6 +210,7 @@ def manage_bookings()-> list:
 			booking.language = 'DE'
 		else:
 			booking.language = 'ESP'
+		booking.body = msg_body
 		vpt_bookings.append(booking)
 
 	return vpt_bookings
@@ -237,7 +250,15 @@ def manage_quotes()-> list:
 def vpt_send_booking_confirmation_eng(booking : VPT_booking):
 	message = tmplt.vpt_eng_booking_confirmation(booking)
 
-	send_message(booking.email, "contact@vptmallorca.com", "Transfer confirmation VPT" + booking.booking_number, message)
+	send_message(booking.email, "contact@vptmallorca.com", "Transfer confirmation " + booking.booking_number, message)
+
+	# print_booking(booking.body)
+	# os.remove("booking_confirmation.pdf")
+
+def vpt_reject_booking_eng(booking : VPT_booking):
+	message = tmplt.vpt_eng_reject_booking(booking)
+
+	send_message(booking.email, "contact@vptmallorca.com", "VPTMallorca transfer", message)
 
 
 def vpt_send_quote_eng(quote_id : int):
@@ -254,15 +275,38 @@ def vpt_send_booking_confirmation_de(booking : VPT_booking):
 	message = tmplt.vpt_de_booking_confirmation(booking)
 	send_message(booking.email, "contact@vptmallorca.com", "Buchungsbestätigung VPT" + booking.booking_number, message)
 
+def vpt_reject_booking_de(booking : VPT_booking):
+	message = tmplt.vpt_de_reject_booking(booking)
+
+	send_message(booking.email, "contact@vptmallorca.com", "VPTMallorca transfer", message)
+
 def vpt_send_quote_de(quote_id : int):
 	quote = VPT_quote = vpt_quotes[quote_id]
 	assert quote.language == "DE"
 
 
+#-------------------------------------ES--------------------------------------#
+def vpt_send_booking_confirmation_es(booking : VPT_booking):
+	assert booking.language == "ES"
+
+	message = tmplt.vpt_es_booking_confirmation(booking)
+
+	send_message(booking.email, "contact@vptmallorca.com", "Confirmación de reserva " + booking.booking_number, message)
+
+def vpt_reject_booking_es(booking : VPT_booking):
+	message = tmplt.vpt_es_reject_booking(booking)
+
+	send_message(booking.email, "contact@vptmallorca.com", "VPTMallorca transfer", message)
+
+def vpt_send_quote_es(quote : VPT_quote):
+	quote = VPT_quote = vpt_quotes[quote_id]
+	assert quote.language == "ES"
+
+
 # --------------------------------------------------------------------------- #
 #                              JANERBUS MODULES                               #
 # --------------------------------------------------------------------------- #
-# booking = VPT_booking("VPT123-1609", "Marc", "Marc Janer", "marcjanerferrer@gmail.com", "636990408", "6", "Palma Airport", "Alcudia", "06/07/2022", "10:35 pm", "VLG5678", "Alcudia", "Palma Airport", "14/07/2022", "9:00 am", "UX6730", None, None, "Palma Airport", "Alcudia", 144, 72, 30, 42, "DE", "Round", None)
+# booking = VPT_booking("VPT123-1609", "Marc", "Marc Janer", "marcjanerferrer@gmail.com", "636990408", "6", "Palma Airport", "Alcudia", "06/07/2022", "10:35 pm", "VLG5678", "Alcudia", "Palma Airport", "14/07/2022", "9:00 am", "UX6730", None, None, "Palma Airport", "Alcudia", 144, 72, 30, 42, "DE", "Round", None, "probando probando")
 #
 # def main():
 #     vpt_send_booking_confirmation_eng(booking)
