@@ -106,7 +106,16 @@ def print_booking(body : str):
 
 	# os.remove("booking_confirmation.pdf")
 
+def mark_as_read(booking : VPT_booking) -> None:
+	outlook = win32com.client.Dispatch('outlook.application', pythoncom.CoInitialize())
+	mapi = outlook.GetNamespace("MAPI")
+	vpt_messages = mapi.Folders("contact@vptmallorca.com").Folders(1).Items
 
+	for msg in list(vpt_messages):
+		if msg.UnRead == True:
+			if msg.Body == booking.body and booking.status == "answered":
+				msg.Open(Cancel)
+				msg.Close(Cancel)
 
 # --------------------------------------------------------------------------- #
 #                                VPT MODULES                                  #

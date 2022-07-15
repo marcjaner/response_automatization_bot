@@ -96,6 +96,8 @@ def yes(update, context):
             otl.vpt_send_booking_confirmation_eng(booking)
         else:
             otl.vpt_send_booking_confirmation_de(booking)
+        booking.status = "answered"
+        otl.mark_as_read(booking)
         # elif booking.language == "ES":
         #     otl.vpt_send_booking_confirmation_es(booking)
 
@@ -106,7 +108,7 @@ def yes(update, context):
         print(e)
 
 def no(update, context):
-    index = context.args[0]
+    index = int(context.args[0])
     assert index < len(vpt_bookings)
 
     booking = vpt_bookings[index]
