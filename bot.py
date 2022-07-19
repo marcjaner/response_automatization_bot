@@ -92,6 +92,8 @@ def yes(update, context):
                         for at, val in zip([attribute], [change[1]]):
                             setattr(booking, at, val)
 
+
+        assert booking.status != "answered"
         if booking.language == "ENG":
             otl.vpt_send_booking_confirmation_eng(booking)
         else:
@@ -112,6 +114,7 @@ def no(update, context):
     assert index < len(vpt_bookings)
 
     booking = vpt_bookings[index]
+    assert booking.status != "answered"
     if booking.language == "ENG":
         otl.vpt_reject_booking_eng(booking)
     elif booking.language == "DE":
@@ -119,21 +122,30 @@ def no(update, context):
     elif booking.language == "ES":
         otl.vpt_reject_booking_es(booking)
 
+    booking.status = "answered"
+    otl.mark_as_read(booking)
+
+
 def reply(update, context):
-    index = context.args[0]
+    index = int(context.args[0])
     assert index >= len(vpt_bookings)
+    quote = vpt_quotes[index]
 
     price = int(context.args[1])
     quote.subtotal = price
     quote.total = price * 2
 
-    quote = vpt_quotes[index]
+    assert quote.status != "answered"
     if quote.language == "ENG":
         otl.vpt_send_quote_eng(quote)
     elif quote.language == "DE":
         otl.vpt_send_quote_de(quote)
     elif quote.language == "ES":
         otl.vpt_send_quote_es(quote)
+
+    quote.status = "answered"
+    otl.mark_as_read(quote)
+
 
 
 # --------------------------------------------------------------------------- #

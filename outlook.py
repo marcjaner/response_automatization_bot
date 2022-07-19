@@ -64,6 +64,7 @@ class VPT_quote:
 	total: int
 	language : str
 	status:str
+	body: str
 
 
 vpt_bookings : TypeAlias = list[VPT_booking]
@@ -88,7 +89,10 @@ def send_message(to : str, acc : str, subject : str, body : str):
 	mapi = outlook.GetNamespace("MAPI")
 	mail = outlook.CreateItem(0)
 	mail.Subject = subject
-	From = outlook.Session.Accounts[acc]
+	for account in outlook.GetNamespace('MAPI').Accounts:
+		if str(account) == acc:
+			From = account
+			break
 	mail.To = to
 	mail.HTMLbody = body
 	mail._oleobj_.Invoke(*(64209, 0, 8, 0, From))
@@ -106,16 +110,17 @@ def print_booking(body : str):
 
 	# os.remove("booking_confirmation.pdf")
 
-def mark_as_read(booking : VPT_booking) -> None:
+def mark_as_read(message) -> None:
 	outlook = win32com.client.Dispatch('outlook.application', pythoncom.CoInitialize())
 	mapi = outlook.GetNamespace("MAPI")
 	vpt_messages = mapi.Folders("contact@vptmallorca.com").Folders(1).Items
 
 	for msg in list(vpt_messages):
 		if msg.UnRead == True:
-			if msg.Body == booking.body and booking.status == "answered":
-				msg.Open(Cancel)
-				msg.Close(Cancel)
+			if msg.Body == message.body and message.status == "answered":
+				print(str(mapi.Folders("contact@vptmallorca.com").Folders(1).Folders))
+				msg.Move(mapi.Folders("contact@vptmallorca.com").Folders(1).Folders("Contestador automatic"))
+				msg.UnRead = False
 
 # --------------------------------------------------------------------------- #
 #                                VPT MODULES                                  #
@@ -186,7 +191,7 @@ def get_quote(msg_body: list)-> list:
 
 def get_quote_class(quote_info: list)-> VPT_quote:
     """ from the info list, creates an instance of the quote class """
-    quote = VPT_quote(quote_info[0],quote_info[1],quote_info[3],quote_info[2], None, None, None, None)
+    quote = VPT_quote(quote_info[0],quote_info[1],quote_info[3],quote_info[2], None, None, None, None, None)
     return quote
 
 
@@ -219,7 +224,7 @@ def manage_bookings()-> list:
 			booking.language = 'DE'
 		else:
 			booking.language = 'ESP'
-		booking.body = msg_body
+		booking.body = vpt_unread_bookings[i].Body
 		vpt_bookings.append(booking)
 
 	return vpt_bookings
@@ -250,7 +255,7 @@ def manage_quotes()-> list:
 			quote.language = 'DE'
 		else:
 			quote.language = 'ESP'
-
+		quote.body = vpt_unread_quotes[i].Body
 		vpt_quotes.append(quote)
 	return vpt_quotes
 
@@ -274,7 +279,7 @@ def vpt_send_quote_eng(quote : VPT_quote):
 	assert quote.language == "ENG"
 	message = tmplt.vpt_eng_quote(quote)
 
-	send_message(quote.email, "contact@vptamllorca.com", "VPTMallorca Quote", message)
+	send_message(quote.email, "contact@vptmallorca.com", "VPTMallorca Quote", message)
 
 #-------------------------------------DE--------------------------------------#
 def vpt_send_booking_confirmation_de(booking : VPT_booking):
