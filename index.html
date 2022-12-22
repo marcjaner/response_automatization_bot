@@ -12,28 +12,59 @@
 </div>
 
 <div id="booking_hero">
-    <h1>Bookings</h1>
+    <h2>Bookings</h2>
+    <p>
+        This page shows all the unread booking messages. Click on the button below to retrieve new bookings. Use the previous and next button to navigate through them.
+    </p>
+</div>
+
+<div id="spacer">
+    <br />
 </div>
 
 
 <div id="quote_hero">
-    <h1>Quotes</h1>
+    <h2>Quotes</h2>
+    <p>
+        This page shows all the unread quote requests. Click on the button below to retrieve new quotes. Use the previous and next button to navigate through them.
+    </p>
 </div>
 
 
 <div id="booking">
     <h3>Booking index: {index}</h3>
+    <p class="small {status}">
+        {status}
+    </p>
+    <h4 class= "{type}">Arrival transfer</h4>
     <p>
-        Palma airport -> Iberostar Alcudia
+        {pick_up_arrival} -> {destination_arrival}
     </p>
     <p>
-        3 pax | 20/07/2022 | 03:45 pm | RY1645
+        {pax} pax | {arrival_date} | {arrival_time} | {flight_n_arrival}
+    </p>
+    <h4 class= "{type}">Departure transfer</h4>
+    <p class= "{type}">
+        {pick_up_departure} -> {destination_departure}
+    </p>
+    <p class= "{type}">
+        {pax} pax | {departure_date} | {departure_time} | {flight_n_departure}
+    </p>
+
+    <h4>Additional comments</h4>
+</div>
+
+
+<div id="quote">
+    <h3>Quote index: {index}</h3>
+    <p class="small {status}">
+        {status}
     </p>
     <br />
     <p>
-        Iberostar Alcudia -> Palma Airport
+        Palma airport -> {destination}
     </p>
     <p>
-        3 pax | 23/07/2022 | 07:45 pm | VLG7543
+        {pax} pax
     </p>
 </div>

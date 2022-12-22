@@ -89,7 +89,9 @@ def send_message(to : str, acc : str, subject : str, body : str):
 	mapi = outlook.GetNamespace("MAPI")
 	mail = outlook.CreateItem(0)
 	mail.Subject = subject
+	print(outlook.GetNamespace('MAPI').Accounts.Count)
 	for account in outlook.GetNamespace('MAPI').Accounts:
+		print(account.SmtpAddress)
 		if str(account) == acc:
 			From = account
 			break
@@ -117,7 +119,7 @@ def mark_as_read(message) -> None:
 
 	for msg in list(vpt_messages):
 		if msg.UnRead == True:
-			if msg.Body == message.body and message.status == "answered":
+			if msg.Body == message.body and message.status != "Pending":
 				print(str(mapi.Folders("contact@vptmallorca.com").Folders(1).Folders))
 				msg.Move(mapi.Folders("contact@vptmallorca.com").Folders(1).Folders("Contestador automatic"))
 				msg.UnRead = False
@@ -158,7 +160,7 @@ def get_booking(msg_body: list)-> list:
 
 def get_booking_class(booking_info: list)-> VPT_booking:
 	""" creates an instance of the booking class from the info found in the auxiliary list created previously """
-	aux_class = VPT_booking(None, booking_info[0].split()[0].title(),booking_info[0].title(),booking_info[1].lower(),booking_info[2],booking_info[3],booking_info[5].title(),booking_info[6].title(),booking_info[7],booking_info[8],booking_info[9],booking_info[10],booking_info[11],booking_info[12],booking_info[13],booking_info[14],booking_info[15],booking_info[16],None, None,None,None,None,None,None,booking_info[4], None, None)
+	aux_class = VPT_booking(None, booking_info[0].split()[0].title(),booking_info[0].title(),booking_info[1].lower(),booking_info[2],booking_info[3],booking_info[5].title(),booking_info[6].title(),booking_info[7],booking_info[8],booking_info[9],booking_info[10],booking_info[11],booking_info[12],booking_info[13],booking_info[14],booking_info[15],booking_info[16],None, None,None,None,None,None,None,booking_info[4], "Pending", None)
 	return aux_class
 
 def treat_quote(msg_body : list)-> None:
@@ -191,19 +193,19 @@ def get_quote(msg_body: list)-> list:
 
 def get_quote_class(quote_info: list)-> VPT_quote:
     """ from the info list, creates an instance of the quote class """
-    quote = VPT_quote(quote_info[0],quote_info[1],quote_info[3],quote_info[2], None, None, None, None, None)
+    quote = VPT_quote(quote_info[0],quote_info[1],quote_info[3],quote_info[2], None, None, None, "Pending", None)
     return quote
 
 
 
 
-def manage_bookings()-> list:
+def manage_bookings(vpt_bookings)-> list:
 	""" updates and manages bookings, returns a list with all the new bookings """
 	vpt_unread_bookings = []
 	vpt_unread_quotes = []
+	vpt_bookings = []
 	# updates global variables with new unread messages
 	vpt_get_unread_messages(vpt_unread_bookings, vpt_unread_quotes)
-	vpt_bookings = []
 	for i in range(0, len(vpt_unread_bookings)):
 		# pre-process the e-mail in order to treat it correctly
 		msg_body = vpt_unread_bookings[i].Body.replace("\n","").split("\r")
