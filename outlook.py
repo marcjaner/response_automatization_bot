@@ -193,7 +193,7 @@ def get_quote(msg_body: list)-> list:
 
 def get_quote_class(quote_info: list)-> VPT_quote:
     """ from the info list, creates an instance of the quote class """
-    quote = VPT_quote(quote_info[0],quote_info[1],quote_info[3],quote_info[2], None, None, None, "Pending", None)
+    quote = VPT_quote(quote_info[0], quote_info[1], quote_info[3], quote_info[2] , None, None, None, "Pending", None)
     return quote
 
 
@@ -227,7 +227,9 @@ def manage_bookings(vpt_bookings)-> list:
 		else:
 			booking.language = 'ESP'
 		booking.body = vpt_unread_bookings[i].Body
-		vpt_bookings.append(booking)
+		#CONTROL
+		if "marcjanerferrer@gmail.com" in booking.email:
+			vpt_bookings.append(booking)
 
 	return vpt_bookings
 
@@ -258,7 +260,8 @@ def manage_quotes()-> list:
 		else:
 			quote.language = 'ESP'
 		quote.body = vpt_unread_quotes[i].Body
-		vpt_quotes.append(quote)
+		if "marcjanerferrer@gmail.com" in quote.email:
+			vpt_quotes.append(quote)
 	return vpt_quotes
 
 #------------------------------------ENG--------------------------------------#

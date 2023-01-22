@@ -83,7 +83,6 @@ def reply_quote(index, price):
         print(e)
         st.session_state.error_message = "This quote may have already been answered"
 
-
 def accept_booking(index, booking_number, price, town):
     price = int(price)
 
@@ -118,16 +117,19 @@ def inputs_filled(inputs):
         if len(input) == 0:
             return False
     return True
+
 def index_input_filled(inputs):
     return len(inputs[0]) > 0
 
 def decrease_booking_index(len):
     st.session_state.booking_index = (st.session_state.booking_index - 1)%len
+
 def increase_booking_index(len):
     st.session_state.booking_index = (st.session_state.booking_index + 1)%len
 
 def decrease_quote_index(len):
     st.session_state.quote_index = (int(st.session_state.quote_index) - 1)%len
+
 def increase_quote_index(len):
     st.session_state.quote_index = (int(st.session_state.quote_index) + 1)%len
 
@@ -138,12 +140,12 @@ def transf_type(booking):
     else:
         return 'return'
 
-def show_booking(variables):
+def show_booking(variables, id):
     vpt_bookings = variables[1]
     booking = vpt_bookings[variables[0]]
 
 
-    st.markdown(get_html_by_id("booking").format(
+    st.markdown(get_html_by_id(id).format(
         index = variables[0],
         pick_up_arrival = booking.pick_up_arrival,
         destination_arrival = booking.destination_arrival,
@@ -159,6 +161,33 @@ def show_booking(variables):
         status = booking.status,
         type = transf_type(booking)
     ), unsafe_allow_html = True)
+
+def all_bookings():
+    show("all_bookings")
+    html = '<div id="bookings_grid">'
+
+    for i in range(0, len(st.session_state.vpt_bookings)):
+        booking = st.session_state.vpt_bookings[i]
+        booking_html = '<div id="booking" class ="booking_item"><h3>Booking index: {index}</h3><p class="small {status}"> {status}</p><br /><h4 class= "{type}">Arrival transfer</h4><p>{pick_up_arrival} -> {destination_arrival}</p><p>{pax} pax | {arrival_date} | {arrival_time} | {flight_n_arrival}</p><h4 class= "{type}">Departure transfer</h4><p class= "{type}">{pick_up_departure} -> {destination_departure}</p><p class= "{type}">{pax} pax | {departure_date} | {departure_time} | {flight_n_departure}</p><h4>Additional comments</h4></div>'.format(
+            index = i,
+            pick_up_arrival = booking.pick_up_arrival,
+            destination_arrival = booking.destination_arrival,
+            pax = booking.pax,
+            arrival_date = booking.arrival_date,
+            arrival_time = booking.arrival_time,
+            flight_n_arrival = booking.flight_n_arrival,
+            pick_up_departure = booking.pick_up_departure,
+            destination_departure = booking.destination_departure,
+            departure_date = booking.departure_date,
+            departure_time = booking.departure_time,
+            flight_n_departure = booking.flight_n_departure,
+            status = booking.status,
+            type = transf_type(booking)
+        )
+        html += booking_html
+
+    html += '</div>'
+    st.markdown(html, unsafe_allow_html=True)
 
 def show_quote(variables):
     vpt_quotes = variables[1]
@@ -257,7 +286,9 @@ def bookings() -> None:
 
 
             variables = [st.session_state.booking_index, st.session_state.vpt_bookings]
-            show_booking(variables)
+            show_booking(variables, "booking")
+
+        all_bookings()
 
 
 
@@ -343,7 +374,7 @@ def initialize():
         password = st.text_input("Password", type = "password")
 
     #username = "marc.janer"
-    #password = "prova"
+    #password = "1234"
 
     if(auth(username, password)):
         main()

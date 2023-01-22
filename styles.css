@@ -1,5 +1,5 @@
 
-#hero, #booking_hero, #quote_hero{
+#hero, #booking_hero, #quote_hero, #all_bookings h3{
     text-align: center;
 }
 
@@ -58,4 +58,21 @@ button.css-1x8cf1d.edgvbvh10{
 
 #booking .one-way{
     display: none;
+}
+
+#bookings_grid {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap:20px;
+    flex-wrap: wrap;
+}
+
+#booking.booking_item{
+    width: 47%;
+    margin-left: 0px;
+    min-height:465px
+}
+#all-bookings{
+    margin-top: 30px
 }
